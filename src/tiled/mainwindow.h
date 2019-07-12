@@ -192,6 +192,7 @@ private:
 
     void exportMapAs(MapDocument *mapDocument);
     void exportTilesetAs(TilesetDocument *tilesetDocument);
+    void convertToHydra();
 
     ActionManager *mActionManager;
     Ui::MainWindow *mUi;
