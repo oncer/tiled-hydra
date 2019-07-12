@@ -76,5 +76,8 @@ MapObject *CreateTileObjectTool::createNewMapObject()
     newMapObject->setShape(MapObject::Rectangle);
     newMapObject->setCell(Cell(tile()));
     newMapObject->setSize(tile()->size());
+    // set the name/type automatically when placing a new object
+    newMapObject->setName(tile()->property(QLatin1String("Object.Type")).toString( ));
+    newMapObject->setType(tile()->property(QLatin1String("Object.Type")).toString( ));
     return newMapObject;
 }
