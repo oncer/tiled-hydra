@@ -36,25 +36,25 @@ Document::Document(DocumentType type, const QString &fileName,
     : QObject(parent)
     , mType(type)
     , mFileName(fileName)
+    , mCanonicalFilePath(QFileInfo(mFileName).canonicalFilePath())
     , mUndoStack(new QUndoStack(this))
     , mCurrentObject(nullptr)
     , mChangedOnDisk(false)
     , mIgnoreBrokenLinks(false)
 {
+    if (!mCanonicalFilePath.isEmpty())
+        sDocumentInstances.insert(mCanonicalFilePath, this);
+
     connect(mUndoStack, &QUndoStack::cleanChanged,
             this, &Document::modifiedChanged);
-
-    QString canonicalFilePath = QFileInfo(mFileName).canonicalFilePath();
-    if (!canonicalFilePath.isEmpty()) {
-        sDocumentInstances.insert(canonicalFilePath, this);
-    }
 }
 
 Document::~Document()
 {
-    QString canonicalPath = QFileInfo(mFileName).canonicalFilePath();
-    if (!canonicalPath.isEmpty()) {
-        sDocumentInstances.remove(canonicalPath);
+    if (!mCanonicalFilePath.isEmpty()) {
+        auto i = sDocumentInstances.find(mCanonicalFilePath);
+        if (i != sDocumentInstances.end() && *i == this)
+            sDocumentInstances.erase(i);
     }
 }
 
@@ -65,16 +65,18 @@ void Document::setFileName(const QString &fileName)
 
     QString oldFileName = mFileName;
 
-    QString canonicalFilePathOld = QFileInfo(oldFileName).canonicalFilePath();
-    if (!canonicalFilePathOld.isEmpty()) {
-        sDocumentInstances.remove(canonicalFilePathOld);
-    }
-    QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
-    if (!canonicalFilePath.isEmpty()) {
-        sDocumentInstances.insert(canonicalFilePath, this);
+    if (!mCanonicalFilePath.isEmpty()) {
+        auto i = sDocumentInstances.find(mCanonicalFilePath);
+        if (i != sDocumentInstances.end() && *i == this)
+            sDocumentInstances.erase(i);
     }
 
     mFileName = fileName;
+    mCanonicalFilePath = QFileInfo(fileName).canonicalFilePath();
+
+    if (!mCanonicalFilePath.isEmpty())
+        sDocumentInstances.insert(mCanonicalFilePath, this);
+
     emit fileNameChanged(fileName, oldFileName);
 }
 

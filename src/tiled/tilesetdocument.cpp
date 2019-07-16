@@ -71,7 +71,7 @@ TilesetDocument::TilesetDocument(const SharedTileset &tileset, const QString &fi
     mCurrentObject = tileset.data();
 
     // warning: will need to be kept up-to-date
-    mFileName = tileset->fileName();
+    setFileName(tileset->fileName());
 
     connect(this, &TilesetDocument::propertyAdded,
             this, &TilesetDocument::onPropertyAdded);
@@ -195,7 +195,7 @@ QString TilesetDocument::displayName() const
         displayName += QLatin1String("#");
         displayName += mTileset->name();
     } else {
-        displayName = QFileInfo(mFileName).fileName();
+        displayName = QFileInfo(fileName()).fileName();
         if (displayName.isEmpty())
             displayName = tr("untitled.tsx");
     }
