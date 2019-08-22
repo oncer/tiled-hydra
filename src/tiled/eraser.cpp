@@ -29,12 +29,11 @@
 #include "tilelayer.h"
 
 using namespace Tiled;
-using namespace Tiled::Internal;
 
 Eraser::Eraser(QObject *parent)
     : AbstractTileTool(tr("Eraser"),
                        QIcon(QLatin1String(
-                               ":images/22x22/stock-tool-eraser.png")),
+                               ":images/22/stock-tool-eraser.png")),
                        QKeySequence(tr("E")),
                        nullptr,
                        parent)
@@ -42,7 +41,7 @@ Eraser::Eraser(QObject *parent)
 {
 }
 
-void Eraser::tilePositionChanged(const QPoint &tilePos)
+void Eraser::tilePositionChanged(QPoint tilePos)
 {
     Q_UNUSED(tilePos);
 
@@ -54,18 +53,19 @@ void Eraser::tilePositionChanged(const QPoint &tilePos)
 
 void Eraser::mousePressed(QGraphicsSceneMouseEvent *event)
 {
-    if (!brushItem()->isVisible())
-        return;
-
-    if (mMode == Nothing) {
+    if (brushItem()->isVisible() && mMode == Nothing) {
         if (event->button() == Qt::LeftButton) {
             mMode = Erase;
             doErase(false);
-        } else if (event->button() == Qt::RightButton) {
+            return;
+        } else if (event->button() == Qt::RightButton && event->modifiers() == Qt::NoModifier) {
             mStart = tilePosition();
             mMode = RectangleErase;
+            return;
         }
     }
+
+    AbstractTileTool::mousePressed(event);
 }
 
 void Eraser::mouseReleased(QGraphicsSceneMouseEvent *event)

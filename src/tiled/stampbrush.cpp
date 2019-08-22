@@ -43,12 +43,11 @@
 #include <memory>
 
 using namespace Tiled;
-using namespace Tiled::Internal;
 
 StampBrush::StampBrush(QObject *parent)
     : AbstractTileTool(tr("Stamp Brush"),
                        QIcon(QLatin1String(
-                               ":images/22x22/stock-tool-clone.png")),
+                               ":images/22/stock-tool-clone.png")),
                        QKeySequence(tr("B")),
                        nullptr,
                        parent)
@@ -63,13 +62,13 @@ StampBrush::StampBrush(QObject *parent)
     connect(mStampActions->wangFill(), &QAction::toggled, this, &StampBrush::wangFillChanged);
 
     connect(mStampActions->flipHorizontal(), &QAction::triggered,
-            [this]() { emit stampChanged(mStamp.flipped(FlipHorizontally)); });
+            [this] { emit stampChanged(mStamp.flipped(FlipHorizontally)); });
     connect(mStampActions->flipVertical(), &QAction::triggered,
-            [this]() { emit stampChanged(mStamp.flipped(FlipVertically)); });
+            [this] { emit stampChanged(mStamp.flipped(FlipVertically)); });
     connect(mStampActions->rotateLeft(), &QAction::triggered,
-            [this]() { emit stampChanged(mStamp.rotated(RotateLeft)); });
+            [this] { emit stampChanged(mStamp.rotated(RotateLeft)); });
     connect(mStampActions->rotateRight(), &QAction::triggered,
-            [this]() { emit stampChanged(mStamp.rotated(RotateRight)); });
+            [this] { emit stampChanged(mStamp.rotated(RotateRight)); });
 }
 
 StampBrush::~StampBrush()
@@ -82,7 +81,7 @@ void StampBrush::deactivate(MapScene *scene)
     AbstractTileTool::deactivate(scene);
 }
 
-void StampBrush::tilePositionChanged(const QPoint &pos)
+void StampBrush::tilePositionChanged(QPoint pos)
 {
     if (mBrushBehavior == Paint) {
         // Draw a line from the previous point to avoid gaps, skipping the
@@ -114,39 +113,42 @@ void StampBrush::tilePositionChanged(const QPoint &pos)
 
 void StampBrush::mousePressed(QGraphicsSceneMouseEvent *event)
 {
-    if (!brushItem()->isVisible())
-        return;
-
-    if (event->button() == Qt::LeftButton) {
-        switch (mBrushBehavior) {
-        case Line:
-            mStampReference = tilePosition();
-            mBrushBehavior = LineStartSet;
-            break;
-        case Circle:
-            mStampReference = tilePosition();
-            mBrushBehavior = CircleMidSet;
-            break;
-        case LineStartSet:
-            doPaint();
-            mStampReference = tilePosition();
-            break;
-        case CircleMidSet:
-            doPaint();
-            break;
-        case Paint:
-            beginPaint();
-            break;
-        case Free:
-            beginPaint();
-            mBrushBehavior = Paint;
-            break;
-        case Capture:
-            break;
+    if (brushItem()->isVisible()) {
+        if (event->button() == Qt::LeftButton) {
+            switch (mBrushBehavior) {
+            case Line:
+                mStampReference = tilePosition();
+                mBrushBehavior = LineStartSet;
+                break;
+            case Circle:
+                mStampReference = tilePosition();
+                mBrushBehavior = CircleMidSet;
+                break;
+            case LineStartSet:
+                doPaint();
+                mStampReference = tilePosition();
+                break;
+            case CircleMidSet:
+                doPaint();
+                break;
+            case Paint:
+                beginPaint();
+                break;
+            case Free:
+                beginPaint();
+                mBrushBehavior = Paint;
+                break;
+            case Capture:
+                break;
+            }
+            return;
+        } else if (event->button() == Qt::RightButton && event->modifiers() == Qt::NoModifier) {
+            beginCapture();
+            return;
         }
-    } else if (event->button() == Qt::RightButton) {
-        beginCapture();
     }
+
+    AbstractTileTool::mousePressed(event);
 }
 
 void StampBrush::mouseReleased(QGraphicsSceneMouseEvent *event)
@@ -414,7 +416,7 @@ void StampBrush::drawPreviewLayer(const QVector<QPoint> &points)
                                   cell);
         }
 
-        preview->addLayer(previewLayer.release());
+        preview->addLayer(std::move(previewLayer));
         preview->addTilesets(preview->usedTilesets());
         mPreviewMap = preview;
     } else if (mIsWangFill) {
@@ -453,7 +455,7 @@ void StampBrush::drawPreviewLayer(const QVector<QPoint> &points)
                                   cell);
         }
 
-        preview->addLayer(previewLayer.release());
+        preview->addLayer(std::move(previewLayer));
         preview->addTileset(mWangSet->tileset()->sharedPointer());
         mPreviewMap = preview;
     } else {
@@ -483,7 +485,7 @@ void StampBrush::drawPreviewLayer(const QVector<QPoint> &points)
                     if ((stampStaggerIndex == mapStaggerIndex) == topIsOdd) {
                         Map *shiftedMap = shiftedCopies.value(map);
                         if (!shiftedMap) {
-                            shiftedMap = new Map(*map);
+                            shiftedMap = map->clone();
                             shiftedCopies.insert(map, shiftedMap);
 
                             LayerIterator it(shiftedMap, Layer::TileLayerType);
@@ -498,7 +500,7 @@ void StampBrush::drawPreviewLayer(const QVector<QPoint> &points)
                     if ((stampStaggerIndex == mapStaggerIndex) == leftIsOdd) {
                         Map *shiftedMap = shiftedCopies.value(map);
                         if (!shiftedMap) {
-                            shiftedMap = new Map(*map);
+                            shiftedMap = map->clone();
                             shiftedCopies.insert(map, shiftedMap);
 
                             LayerIterator it(shiftedMap, Layer::TileLayerType);

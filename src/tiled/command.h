@@ -30,35 +30,17 @@
 #endif
 
 namespace Tiled {
-namespace Internal {
 
 struct Command
 {
-    Command(bool isEnabled = true,
-            QString name = QString(),
-            QString executable = QString(),
-            QString arguments = QString(),
-            QString workingDirectory = QString(),
-            QKeySequence shortcut = QKeySequence(),
-            bool showOutput = true,
-            bool saveBeforeExecute = true)
-        : isEnabled(isEnabled)
-        , name(std::move(name))
-        , executable(std::move(executable))
-        , arguments(std::move(arguments))
-        , workingDirectory(std::move(workingDirectory))
-        , shortcut(shortcut)
-        , showOutput(showOutput)
-        , saveBeforeExecute(saveBeforeExecute) {}
-
-    bool isEnabled;
+    bool isEnabled = true;
     QString name;
     QString executable;
     QString arguments;
     QString workingDirectory;
     QKeySequence shortcut;
-    bool showOutput;
-    bool saveBeforeExecute;
+    bool showOutput = true;
+    bool saveBeforeExecute = true;
 
     /**
      * Returns the final command with replaced tokens.
@@ -93,12 +75,11 @@ class CommandProcess : public QProcess
 public:
     CommandProcess(const Command &command, bool inTerminal = false, bool showOutput = true);
 
-private slots:
+private:
     void consoleOutput();
     void consoleError();
     void handleProcessError(QProcess::ProcessError);
 
-private:
     void reportErrorAndDelete(const QString &);
 
     QString mName;
@@ -110,5 +91,4 @@ private:
 #endif
 };
 
-} // namespace Internal
 } // namespace Tiled

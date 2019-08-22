@@ -20,13 +20,13 @@
 
 #pragma once
 
+#include "fileformat.h"
 #include "preferences.h"
 #include "tileset.h"
 
 #include <memory>
 
 namespace Tiled {
-namespace Internal {
 
 /**
  * Applies certain export options to a map and its tilesets, or to a specific
@@ -39,6 +39,8 @@ public:
         : mOptions(options)
     {}
 
+    FileFormat::Options formatOptions() const;
+
     SharedTileset prepareExportTileset(const SharedTileset &tileset,
                                        bool savingTileset = true) const;
 
@@ -50,5 +52,4 @@ private:
     const Preferences::ExportOptions mOptions;
 };
 
-} // namespace Internal
 } // namespace Tiled

@@ -40,8 +40,6 @@ namespace Tiled {
 
 class Terrain;
 
-namespace Internal {
-
 class AbstractTool;
 class BucketFillTool;
 class ComboBoxProxyModel;
@@ -103,7 +101,12 @@ public:
 
     void showMessage(const QString &text, int timeout = 0);
 
-public slots:
+    void setCurrentTileset(const SharedTileset &tileset);
+    SharedTileset currentTileset() const;
+
+    void addExternalTilesets(const QStringList &fileNames);
+
+private:
     void setSelectedTool(AbstractTool *tool);
 
     void paste(ClipboardManager::PasteFlags flags);
@@ -116,10 +119,8 @@ public slots:
 
     void selectWangBrush();
 
-    void addExternalTilesets(const QStringList &fileNames);
     void filesDroppedOnTilesetDock(const QStringList &fileNames);
 
-private slots:
     void currentWidgetChanged();
 
     void cursorChanged(const QCursor &cursor);
@@ -129,9 +130,9 @@ private slots:
     void layerComboActivated();
     void updateLayerComboIndex();
 
-private:
     void setupQuickStamps();
     void retranslateUi();
+    void showTileCollisionShapesChanged(bool enabled);
 
     void handleExternalTilesetsAndImages(const QStringList &fileNames,
                                          bool handleImages);
@@ -194,5 +195,4 @@ inline MapView *MapEditor::currentMapView() const
     return viewForDocument(mCurrentMapDocument);
 }
 
-} // namespace Internal
 } // namespace Tiled

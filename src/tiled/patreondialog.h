@@ -27,7 +27,6 @@ class PatreonDialog;
 }
 
 namespace Tiled {
-namespace Internal {
 
 class PatreonDialog : public QDialog
 {
@@ -37,14 +36,12 @@ public:
     explicit PatreonDialog(QWidget *parent = nullptr);
     ~PatreonDialog();
 
-private slots:
+private:
     void openPatreonPage();
     void sayThanks();
     void maybeLater(QAction *action);
 
-private:
     Ui::PatreonDialog *ui;
 };
 
-} // namespace Internal
 } // namespace Tiled

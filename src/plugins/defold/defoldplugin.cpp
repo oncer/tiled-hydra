@@ -73,11 +73,6 @@ DefoldPlugin::DefoldPlugin()
 {
 }
 
-QStringList DefoldPlugin::outputFiles(const Tiled::Map *, const QString &fileName) const
-{
-    return QStringList() << fileName;
-}
-
 QString DefoldPlugin::nameFilter() const
 {
     return tr("Defold files (*.tilemap)");
@@ -93,8 +88,10 @@ QString DefoldPlugin::errorString() const
     return mError;
 }
 
-bool DefoldPlugin::write(const Tiled::Map *map, const QString &fileName)
+bool DefoldPlugin::write(const Tiled::Map *map, const QString &fileName, Options options)
 {
+    Q_UNUSED(options)
+
     QVariantHash map_h;
 
     QString layers;

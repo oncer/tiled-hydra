@@ -28,29 +28,26 @@
 #include <QFileInfo>
 
 namespace Tiled {
-namespace Internal {
 
 class TilesetParametersPropertyType {};
 class AlignmentPropertyType {};
 
 } // namespace Tiled
-} // namespace Internal
 
 // Needs to be up here rather than at the bottom of the file to make a
 // static_assert in qMetaTypeId work (as of C++11)
-Q_DECLARE_METATYPE(Tiled::Internal::TilesetParametersPropertyType)
-Q_DECLARE_METATYPE(Tiled::Internal::AlignmentPropertyType)
+Q_DECLARE_METATYPE(Tiled::TilesetParametersPropertyType)
+Q_DECLARE_METATYPE(Tiled::AlignmentPropertyType)
 
 namespace Tiled {
-namespace Internal {
 
 VariantPropertyManager::VariantPropertyManager(QObject *parent)
     : QtVariantPropertyManager(parent)
     , mSuggestionsAttribute(QStringLiteral("suggestions"))
     , mMultilineAttribute(QStringLiteral("multiline"))
-    , mImageMissingIcon(QStringLiteral("://images/16x16/image-missing.png"))
+    , mImageMissingIcon(QStringLiteral("://images/16/image-missing.png"))
 {
-    mImageMissingIcon.addPixmap(QPixmap(QStringLiteral("://images/32x32/image-missing.png")));
+    mImageMissingIcon.addPixmap(QPixmap(QStringLiteral("://images/32/image-missing.png")));
 
     connect(this, &QtVariantPropertyManager::valueChanged,
             this, &VariantPropertyManager::slotValueChanged);
@@ -166,7 +163,8 @@ QString VariantPropertyManager::valueText(const QtProperty *property) const
 
     if (m_alignValues.contains(const_cast<QtProperty *>(property))) {
         const Qt::Alignment v = m_alignValues.value(const_cast<QtProperty *>(property));
-        return tr("%1, %2").arg(indexHToString(alignToIndexH(v))).arg(indexVToString(alignToIndexV(v)));
+        return tr("%1, %2").arg(indexHToString(alignToIndexH(v)),
+                                indexVToString(alignToIndexV(v)));
     }
 
     auto stringAttributesIt = mStringAttributes.find(property);
@@ -435,5 +433,4 @@ QString VariantPropertyManager::indexVToString(int idx) const
     return tr("Center");
 }
 
-} // namespace Internal
 } // namespace Tiled

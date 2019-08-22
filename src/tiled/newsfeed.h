@@ -31,7 +31,6 @@ class QNetworkAccessManager;
 class QNetworkReply;
 
 namespace Tiled {
-namespace Internal {
 
 class NewsItem
 {
@@ -50,6 +49,8 @@ private:
 
 public:
     static NewsFeed &instance();
+
+    void setEnabled(bool enabled);
 
     void refresh();
 
@@ -71,10 +72,9 @@ signals:
 protected:
     void timerEvent(QTimerEvent *event) override;
 
-private slots:
+private:
     void finished(QNetworkReply *reply);
 
-private:
     void setLastRead(const QDateTime &dateTime);
 
     QNetworkAccessManager *mNetworkAccessManager;
@@ -105,5 +105,4 @@ inline QString NewsFeed::errorString() const
     return mErrorString;
 }
 
-} // namespace Internal
 } // namespace Tiled

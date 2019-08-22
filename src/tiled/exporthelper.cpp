@@ -24,7 +24,17 @@
 #include "objectgroup.h"
 
 namespace Tiled {
-namespace Internal {
+
+/**
+ * @return the format options that should be used when writing the file.
+ */
+FileFormat::Options ExportHelper::formatOptions() const
+{
+    FileFormat::Options options;
+    if (mOptions.testFlag(Preferences::ExportMinimized))
+        options |= FileFormat::WriteMinimized;
+    return options;
+}
 
 /**
  * Prepares a tileset for export.
@@ -86,7 +96,7 @@ const Map *ExportHelper::prepareExportMap(const Map *map, std::unique_ptr<Map> &
         return map;
 
     // Make a copy to which export options are applied
-    exportMap.reset(new Map(*map));
+    exportMap.reset(map->clone());
 
     if (mOptions.testFlag(Preferences::DetachTemplateInstances))
         for (Layer *layer : exportMap->objectGroups())
@@ -142,5 +152,4 @@ void ExportHelper::resolveTypeAndProperties(MapObject *object) const
     object->setProperties(properties);
 }
 
-} // namespace Internal
 } // namespace Tiled

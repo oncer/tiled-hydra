@@ -24,7 +24,6 @@
 #include <QtVariantEditorFactory>
 
 namespace Tiled {
-namespace Internal {
 
 class FileEdit;
 class TextPropertyEdit;
@@ -58,7 +57,7 @@ protected:
                           QWidget *parent) override;
     void disconnectPropertyManager(QtVariantPropertyManager *manager) override;
 
-private slots:
+private:
     void slotPropertyChanged(QtProperty *property, const QVariant &value);
     void slotPropertyAttributeChanged(QtProperty *property,
                                       const QString &attribute,
@@ -67,7 +66,6 @@ private slots:
     void textPropertyEditTextChanged(const QString &value);
     void slotEditorDestroyed(QObject *object);
 
-private:
     QMap<QtProperty *, QList<FileEdit *> > mCreatedFileEdits;
     QMap<FileEdit *, QtProperty *> mFileEditToProperty;
 
@@ -78,5 +76,4 @@ private:
     QMap<TextPropertyEdit *, QtProperty *> mTextPropertyEditToProperty;
 };
 
-} // namespace Internal
 } // namespace Tiled

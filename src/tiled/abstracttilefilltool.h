@@ -31,8 +31,6 @@ namespace Tiled {
 
 class WangSet;
 
-namespace Internal {
-
 class MapDocument;
 class StampActions;
 class WangFiller;
@@ -88,7 +86,7 @@ protected:
     void mapDocumentChanged(MapDocument *oldDocument,
                             MapDocument *newDocument) override;
 
-    void tilePositionChanged(const QPoint &tilePos) override;
+    void tilePositionChanged(QPoint tilePos) override;
 
     QList<Layer *> targetLayers() const override;
 
@@ -141,5 +139,4 @@ inline bool AbstractTileFillTool::isCapturing() const
     return mCaptureStampHelper.isActive();
 }
 
-} // namespace Internal
 } // namespace Tiled

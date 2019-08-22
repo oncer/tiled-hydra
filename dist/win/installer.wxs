@@ -77,7 +77,6 @@
               <Shortcut Id="startmenuTiled" Directory="ProgramMenuFolder" Name="Tiled" WorkingDirectory='INSTALLDIR' Icon="tiled.exe" IconIndex="0" Advertise="yes" />
               <Shortcut Id="desktopTiled" Directory="DesktopFolder" Name="Tiled" WorkingDirectory='INSTALLDIR' Icon="tiled.exe" IconIndex="0" Advertise="yes" />
             </File>
-            <File Id="filFC35B15ADCD88C87362A53A3161884C1" Source="$(var.InstallRoot)\automappingconverter.exe" />
             <File Id="filF01A89E83F9999A5C328B9967FB4E6A0" Source="$(var.InstallRoot)\terraingenerator.exe" />
             <File Id="fil806C195E384F65A83656FBCFB9431D61" Source="$(var.InstallRoot)\tiled.dll" />
             <File Id="fil3F7B07FEDA3DAC1FD6C5491D240B7867" Source="$(var.InstallRoot)\tmxrasterizer.exe" />
@@ -86,11 +85,16 @@
             <File Id="Qt5Core_dll" Source="$(var.QtDir)\bin\Qt5Core.dll"/>
             <File Id="Qt5Gui_dll" Source="$(var.QtDir)\bin\Qt5Gui.dll"/>
             <File Id="Qt5Network_dll" Source="$(var.QtDir)\bin\Qt5Network.dll"/>
+            <File Id="Qt5Qml_dll" Source="$(var.QtDir)\bin\Qt5Qml.dll"/>
             <File Id="Qt5Svg_dll" Source="$(var.QtDir)\bin\Qt5Svg.dll"/>
             <File Id="Qt5Widgets_dll" Source="$(var.QtDir)\bin\Qt5Widgets.dll"/>
 
             <?ifdef MingwDir ?>
+            <?if $(var.Platform) = x64 ?>
+            <File Id="libgcc_s_seh_1_dll" Source="$(var.MingwDir)\bin\libgcc_s_seh-1.dll"/>
+            <?else ?>
             <File Id="libgcc_s_dw2_1_dll" Source="$(var.MingwDir)\bin\libgcc_s_dw2-1.dll"/>
+            <?endif ?>
             <File Id="libstdc___6_dll" Source="$(var.MingwDir)\bin\libstdc++-6.dll"/>
             <File Id="libwinpthread_1_dll" Source="$(var.MingwDir)\bin\libwinpthread-1.dll"/>
             <?else?>
@@ -100,10 +104,6 @@
               <File Source="$(var.VcInstallDir)\redist\$(var.Platform)\Microsoft.VC120.CRT\msvcp120.dll"/>
               <File Source="$(var.VcInstallDir)\redist\$(var.Platform)\Microsoft.VC120.CRT\msvcr120.dll"/>
               <?endif?>
-            <?endif?>
-
-            <?ifdef Sparkle ?>
-            <File Id="WinSparkleDLL" Source="$(var.InstallRoot)\WinSparkle.dll" />
             <?endif?>
 
             <?ifdef OpenSslDir ?>
@@ -157,6 +157,11 @@
                 <File Id="qwindows_dll" Source="$(var.QtDir)\plugins\platforms\qwindows.dll"/>
               </Component>
             </Directory>
+            <Directory Id="iconEnginePlugins" Name="iconengines">
+              <Component Id="IconEnginePlugins" Guid="{6087784F-C335-4EA6-A959-674E0D72F194}">
+                <File Id="qsvgicon_dll" Source="$(var.QtDir)\plugins\iconengines\qsvgicon.dll"/>
+              </Component>
+            </Directory>
             <Directory Id="imageFormatPlugins" Name="imageformats">
               <Component Id="ImageFormatPlugins" Guid="{C655A440-9F24-4489-8DB9-5A4EFF6EB5D7}">
                 <File Id="qgif_dll" Source="$(var.QtDir)\plugins\imageformats\qgif.dll"/>
@@ -168,6 +173,13 @@
                 <File Id="qwebp_dll" Source="$(var.QtDir)\plugins\imageformats\qwebp.dll"/>
               </Component>
             </Directory>
+            <?ifdef WindowsVistaStyle ?>
+            <Directory Id="stylePlugins" Name="styles">
+              <Component Id="StylePlugins" Guid="{DB5D5DD3-1128-4FE0-A76C-EB7E4069EBFE}">
+                <File Id="qwindowsvistastyle_dll" Source="$(var.QtDir)\plugins\styles\qwindowsvistastyle.dll"/>
+              </Component>
+            </Directory>
+            <?endif?>
           </Directory>
 
           <Directory Id="dir674F7F6D2030C2EBF39AA06B57EAF368" Name="translations">
@@ -371,6 +383,10 @@
       <ComponentRef Id='PythonPluginExampleLib' />
       <ComponentRef Id='PlatformPlugins' />
       <ComponentRef Id='ImageFormatPlugins' />
+      <ComponentRef Id='IconEnginePlugins' />
+      <?ifdef WindowsVistaStyle ?>
+      <ComponentRef Id='StylePlugins' />
+      <?endif?>
       <ComponentRef Id='ProgramMenuDir' />
     </Feature>
 

@@ -30,8 +30,6 @@ namespace Tiled {
 
 class Layer;
 
-namespace Internal {
-
 class AutoMapper;
 class MapDocument;
 
@@ -42,6 +40,7 @@ class MapDocument;
 class AutomappingManager : public QObject
 {
     Q_OBJECT
+    Q_DISABLE_COPY(AutomappingManager)
 
 public:
     /**
@@ -75,12 +74,9 @@ public slots:
      */
     void autoMap();
 
-private slots:
+private:
     void onRegionEdited(const QRegion &where, Layer *touchedLayer);
     void onFileChanged();
-
-private:
-    Q_DISABLE_COPY(AutomappingManager)
 
     /**
      * This function parses a rules file.
@@ -142,5 +138,4 @@ private:
     QString rulesFileName() const;
 };
 
-} // namespace Internal
 } // namespace Tiled

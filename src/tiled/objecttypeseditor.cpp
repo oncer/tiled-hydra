@@ -38,8 +38,9 @@
 #include <QStyledItemDelegate>
 #include <QToolBar>
 
+#include "qtcompat_p.h"
+
 namespace Tiled {
-namespace Internal {
 
 class ColorDelegate : public QStyledItemDelegate
 {
@@ -123,14 +124,14 @@ ObjectTypesEditor::ObjectTypesEditor(QWidget *parent)
     mRemovePropertyAction->setEnabled(false);
     mRenamePropertyAction->setEnabled(false);
 
-    QIcon addIcon(QLatin1String(":/images/22x22/add.png"));
-    QIcon removeIcon(QLatin1String(":/images/22x22/remove.png"));
+    QIcon addIcon(QLatin1String(":/images/22/add.png"));
+    QIcon removeIcon(QLatin1String(":/images/22/remove.png"));
 
     mAddObjectTypeAction->setIcon(addIcon);
     mRemoveObjectTypeAction->setIcon(removeIcon);
     mAddPropertyAction->setIcon(addIcon);
     mRemovePropertyAction->setIcon(removeIcon);
-    mRenamePropertyAction->setIcon(QIcon(QLatin1String(":/images/16x16/rename.png")));
+    mRenamePropertyAction->setIcon(QIcon(QLatin1String(":/images/16/rename.png")));
 
     Utils::setThemeIcon(mAddObjectTypeAction, "add");
     Utils::setThemeIcon(mRemoveObjectTypeAction, "remove");
@@ -370,8 +371,8 @@ void ObjectTypesEditor::importObjectTypes()
 
     if (serializer.readObjectTypes(fileName, objectTypes)) {
         ObjectTypes currentTypes = mObjectTypesModel->objectTypes();
-        for (const ObjectType &type : objectTypes) {
-            auto it = std::find_if(currentTypes.begin(), currentTypes.end(), [&type](ObjectType &existingType) {
+        for (const ObjectType &type : qAsConst(objectTypes)) {
+            auto it = std::find_if(currentTypes.begin(), currentTypes.end(), [&type](const ObjectType &existingType) {
                 return existingType.name == type.name;
             });
 
@@ -600,5 +601,4 @@ void ObjectTypesEditor::currentItemChanged(QtBrowserItem *item)
     mRenamePropertyAction->setEnabled(itemSelected);
 }
 
-} // namespace Internal
 } // namespace Tiled

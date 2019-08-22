@@ -28,13 +28,12 @@
 #include "utils.h"
 
 namespace Tiled {
-namespace Internal {
 
 CreateTextObjectTool::CreateTextObjectTool(QObject *parent)
     : CreateObjectTool(parent)
 {
-    QIcon icon(QLatin1String(":images/24x24/insert-text.png"));
-    icon.addFile(QLatin1String(":images/48x48/insert-text.png"));
+    QIcon icon(QLatin1String(":images/24/insert-text.png"));
+    icon.addFile(QLatin1String(":images/48/insert-text.png"));
     setIcon(icon);
     Utils::setThemeIcon(this, "insert-text");
     languageChangedImpl();
@@ -78,5 +77,4 @@ MapObject *CreateTextObjectTool::createNewMapObject()
     return newMapObject;
 }
 
-} // namespace Internal
 } // namespace Tiled

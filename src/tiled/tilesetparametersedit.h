@@ -25,7 +25,6 @@
 class QLabel;
 
 namespace Tiled {
-namespace Internal {
 
 class TilesetDocument;
 
@@ -43,10 +42,9 @@ public:
     void setTilesetDocument(TilesetDocument *tilesetDocument);
     TilesetDocument *tilesetDocument() const;
 
-private slots:
+private:
     void buttonClicked();
 
-private:
     QLabel *mLabel;
     TilesetDocument *mTilesetDocument;
 };
@@ -56,5 +54,4 @@ inline TilesetDocument *TilesetParametersEdit::tilesetDocument() const
     return mTilesetDocument;
 }
 
-} // namespace Internal
 } // namespace Tiled

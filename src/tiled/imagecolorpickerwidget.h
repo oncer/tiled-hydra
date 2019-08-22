@@ -30,7 +30,6 @@ class ImageColorPickerWidget;
 }
 
 namespace Tiled {
-namespace Internal {
 
 /**
  * A popup widget for selecting a colour from an image.
@@ -52,17 +51,15 @@ protected:
     void resizeEvent(QResizeEvent*) override;
 
 private:
+    void onMouseMove(QMouseEvent*);
+    void onMouseRelease(QMouseEvent*);
+
     Ui::ImageColorPickerWidget *mUi;
     QColor mPreviewColor;
     QColor mSelectedColor;
     QImage mImage;
     QPixmap mPreviewIcon;
     double mScaleX, mScaleY;
-
-private slots:
-    void onMouseMove(QMouseEvent*);
-    void onMouseRelease(QMouseEvent*);
 };
 
-} // namespace Internal
 } // namespace Tiled

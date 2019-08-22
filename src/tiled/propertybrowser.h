@@ -20,11 +20,15 @@
 
 #pragma once
 
-#include <QHash>
-#include <QUndoCommand>
+#include "changeevents.h"
+#include "map.h"
+#include "properties.h"
 
 #include <QtTreePropertyBrowser>
-#include "properties.h"
+
+#include <QHash>
+
+class QUndoCommand;
 
 class QtGroupPropertyManager;
 class QtVariantProperty;
@@ -34,16 +38,11 @@ namespace Tiled {
 
 class GroupLayer;
 class ImageLayer;
-class Layer;
-class Map;
 class MapObject;
-class Object;
 class ObjectGroup;
 class Tile;
 class TileLayer;
 class Tileset;
-
-namespace Internal {
 
 class Document;
 class MapDocument;
@@ -89,12 +88,10 @@ public:
 protected:
     bool event(QEvent *event) override;
 
-private slots:
+private:
+    void documentChanged(const ChangeEvent &change);
     void mapChanged();
-    void objectsChanged(const QList<MapObject*> &objects);
-    void objectsTypeChanged(const QList<MapObject*> &objects);
-    void layerChanged(Layer *layer);
-    void objectGroupChanged(ObjectGroup *objectGroup);
+    void objectsChanged(const MapObjectsChangeEvent &mapObjectsChange);
     void imageLayerChanged(ImageLayer *imageLayer);
     void tilesetChanged(Tileset *tileset);
     void tileChanged(Tile *tile);
@@ -116,7 +113,6 @@ private slots:
 
     void resetProperty(QtProperty *property);
 
-private:
     enum PropertyId {
         NameProperty,
         TypeProperty,
@@ -162,7 +158,10 @@ private:
         WangColorProbabilityProperty,
         CustomProperty,
         InfiniteProperty,
-        TemplateProperty
+        TemplateProperty,
+        CompressionLevelProperty,
+        ChunkWidthProperty,
+        ChunkHeightProperty
     };
 
     void addMapProperties();
@@ -237,6 +236,7 @@ private:
     QStringList mOrientationNames;
     QStringList mTilesetOrientationNames;
     QStringList mLayerFormatNames;
+    QList<Map::LayerDataFormat> mLayerFormatValues;
     QStringList mRenderOrderNames;
     QStringList mFlippingFlagNames;
     QStringList mDrawOrderNames;
@@ -247,5 +247,4 @@ inline Object *PropertyBrowser::object() const
     return mObject;
 }
 
-} // namespace Internal
 } // namespace Tiled

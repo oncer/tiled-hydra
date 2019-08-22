@@ -21,22 +21,23 @@
 #include "automappingmanager.h"
 
 #include "automapperwrapper.h"
+#include "logginginterface.h"
 #include "map.h"
 #include "mapdocument.h"
+#include "preferences.h"
 #include "tilelayer.h"
 #include "tmxmapformat.h"
-#include "preferences.h"
 
+#include <QDir>
 #include <QFileInfo>
-#include <QTextStream>
 #include <QFileSystemWatcher>
+#include <QTextStream>
 
 #include "qtcompat_p.h"
 
 #include <memory>
 
 using namespace Tiled;
-using namespace Tiled::Internal;
 
 AutomappingManager::AutomappingManager(QObject *parent)
     : QObject(parent)
@@ -141,17 +142,23 @@ void AutomappingManager::autoMapInternal(const QRegion &where,
 bool AutomappingManager::loadFile(const QString &filePath)
 {
     bool ret = true;
-    const QString absPath = QFileInfo(filePath).path();
+    const QDir absPath = QFileInfo(filePath).dir();
     QFile rulesFile(filePath);
 
     if (!rulesFile.exists()) {
-        mError += tr("No rules file found at:\n%1").arg(filePath)
-                  + QLatin1Char('\n');
+        QString error = tr("No rules file found at '%1'").arg(filePath);
+        ERROR(error);
+
+        mError += error;
+        mError += QLatin1Char('\n');
         return false;
     }
     if (!rulesFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        mError += tr("Error opening rules file:\n%1").arg(filePath)
-                  + QLatin1Char('\n');
+        QString error = tr("Error opening rules file '%1'").arg(filePath);
+        ERROR(error);
+
+        mError += error;
+        mError += QLatin1Char('\n');
         return false;
     }
 
@@ -167,11 +174,20 @@ bool AutomappingManager::loadFile(const QString &filePath)
                 || rulePath.startsWith(QLatin1String("//")))
             continue;
 
-        if (QFileInfo(rulePath).isRelative())
-            rulePath = absPath + QLatin1Char('/') + rulePath;
+        QFileInfo rulePathInfo(rulePath);
 
-        if (!QFileInfo(rulePath).exists()) {
-            mError += tr("File not found:\n%1").arg(rulePath) + QLatin1Char('\n');
+        if (rulePathInfo.isRelative()) {
+            rulePath = absPath.filePath(rulePath);
+            rulePathInfo.setFile(rulePath);
+        }
+
+        if (!rulePathInfo.exists()) {
+            QString error = tr("File not found: '%1' (referenced by '%2')")
+                    .arg(rulePath, filePath);
+            ERROR(error);
+
+            mError += error;
+            mError += QLatin1Char('\n');
             ret = false;
             continue;
         }
@@ -181,8 +197,12 @@ bool AutomappingManager::loadFile(const QString &filePath)
             std::unique_ptr<Map> rules(tmxFormat.read(rulePath));
 
             if (!rules) {
-                mError += tr("Opening rules map failed:\n%1").arg(
-                        tmxFormat.errorString()) + QLatin1Char('\n');
+                QString error = tr("Opening rules map '%1' failed: %2")
+                        .arg(rulePath, tmxFormat.errorString());
+                ERROR(error);
+
+                mError += error;
+                mError += QLatin1Char('\n');
                 ret = false;
                 continue;
             }

@@ -32,7 +32,6 @@
 #include <QUndoGroup>
 
 namespace Tiled {
-namespace Internal {
 
 MainToolBar::MainToolBar(QWidget *parent)
     : QToolBar(parent)
@@ -42,25 +41,25 @@ MainToolBar::MainToolBar(QWidget *parent)
     setWindowTitle(tr("Main Toolbar"));
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
 
-    QIcon newIcon(QLatin1String(":images/24x24/document-new.png"));
-    QIcon openIcon(QLatin1String(":images/24x24/document-open.png"));
-    QIcon saveIcon(QLatin1String(":images/24x24/document-save.png"));
-    QIcon undoIcon(QLatin1String(":images/24x24/edit-undo.png"));
-    QIcon redoIcon(QLatin1String(":images/24x24/edit-redo.png"));
+    QIcon newIcon(QLatin1String(":images/24/document-new.png"));
+    QIcon openIcon(QLatin1String(":images/24/document-open.png"));
+    QIcon saveIcon(QLatin1String(":images/24/document-save.png"));
+    QIcon undoIcon(QLatin1String(":images/24/edit-undo.png"));
+    QIcon redoIcon(QLatin1String(":images/24/edit-redo.png"));
 
-    newIcon.addFile(QLatin1String(":images/16x16/document-new.png"));
-    openIcon.addFile(QLatin1String(":images/16x16/document-open.png"));
-    saveIcon.addFile(QLatin1String(":images/16x16/document-save.png"));
-    redoIcon.addFile(QLatin1String(":images/16x16/edit-redo.png"));
-    undoIcon.addFile(QLatin1String(":images/16x16/edit-undo.png"));
+    newIcon.addFile(QLatin1String(":images/16/document-new.png"));
+    openIcon.addFile(QLatin1String(":images/16/document-open.png"));
+    saveIcon.addFile(QLatin1String(":images/16/document-save.png"));
+    redoIcon.addFile(QLatin1String(":images/16/edit-redo.png"));
+    undoIcon.addFile(QLatin1String(":images/16/edit-undo.png"));
 
     mNewButton = new QToolButton(this);
     mOpenAction = new QAction(this);
     mSaveAction = new QAction(this);
 
     QMenu *newMenu = new QMenu(this);
-    newMenu->addAction(ActionManager::action("file.new_map"));
-    newMenu->addAction(ActionManager::action("file.new_tileset"));
+    newMenu->addAction(ActionManager::action("NewMap"));
+    newMenu->addAction(ActionManager::action("NewTileset"));
     mNewButton->setMenu(newMenu);
     mNewButton->setPopupMode(QToolButton::InstantPopup);
 
@@ -138,5 +137,4 @@ void MainToolBar::retranslateUi()
     mUndoAction->setIconText(tr("Undo"));
 }
 
-} // namespace Internal
 } // namespace Tiled

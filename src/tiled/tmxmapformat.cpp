@@ -31,30 +31,30 @@
 #include <QXmlStreamReader>
 
 using namespace Tiled;
-using namespace Tiled::Internal;
 
 TmxMapFormat::TmxMapFormat(QObject *parent)
     : MapFormat(parent)
 {
 }
 
-Map *TmxMapFormat::read(const QString &fileName)
+std::unique_ptr<Map> TmxMapFormat::read(const QString &fileName)
 {
     mError.clear();
 
     MapReader reader;
-    Map *map = reader.readMap(fileName);
+    std::unique_ptr<Map> map(reader.readMap(fileName));
     if (!map)
         mError = reader.errorString();
 
     return map;
 }
 
-bool TmxMapFormat::write(const Map *map, const QString &fileName)
+bool TmxMapFormat::write(const Map *map, const QString &fileName, Options options)
 {
     Preferences *prefs = Preferences::instance();
 
     MapWriter writer;
+    writer.setMinimizeOutput(options.testFlag(WriteMinimized));
     writer.setDtdEnabled(prefs->dtdEnabled());
 
     bool result = writer.writeMap(map, fileName);
@@ -77,7 +77,7 @@ QByteArray TmxMapFormat::toByteArray(const Map *map)
     return buffer.data();
 }
 
-Map *TmxMapFormat::fromByteArray(const QByteArray &data)
+std::unique_ptr<Map> TmxMapFormat::fromByteArray(const QByteArray &data)
 {
     mError.clear();
 
@@ -86,7 +86,7 @@ Map *TmxMapFormat::fromByteArray(const QByteArray &data)
     buffer.open(QBuffer::ReadOnly);
 
     MapReader reader;
-    Map *map = reader.readMap(&buffer);
+    std::unique_ptr<Map> map(reader.readMap(&buffer));
     if (!map)
         mError = reader.errorString();
 
@@ -131,11 +131,12 @@ SharedTileset TsxTilesetFormat::read(const QString &fileName)
     return tileset;
 }
 
-bool TsxTilesetFormat::write(const Tileset &tileset, const QString &fileName)
+bool TsxTilesetFormat::write(const Tileset &tileset, const QString &fileName, Options options)
 {
     Preferences *prefs = Preferences::instance();
 
     MapWriter writer;
+    writer.setMinimizeOutput(options.testFlag(WriteMinimized));
     writer.setDtdEnabled(prefs->dtdEnabled());
 
     bool result = writer.writeTileset(tileset, fileName);
@@ -172,12 +173,12 @@ XmlObjectTemplateFormat::XmlObjectTemplateFormat(QObject *parent)
 {
 }
 
-ObjectTemplate *XmlObjectTemplateFormat::read(const QString &fileName)
+std::unique_ptr<ObjectTemplate> XmlObjectTemplateFormat::read(const QString &fileName)
 {
     mError.clear();
 
     MapReader reader;
-    ObjectTemplate *objectTemplate = reader.readObjectTemplate(fileName);
+    auto objectTemplate = reader.readObjectTemplate(fileName);
     if (!objectTemplate)
         mError = reader.errorString();
 

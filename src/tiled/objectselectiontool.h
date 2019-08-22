@@ -31,7 +31,6 @@
 class QGraphicsItem;
 
 namespace Tiled {
-namespace Internal {
 
 class Handle;
 class OriginIndicator;
@@ -62,14 +61,16 @@ public:
 
     void languageChanged() override;
 
-private slots:
+protected:
+    void changeEvent(const ChangeEvent &event) override;
+
+private:
     void updateHandles();
     void updateHandlesAndOrigin();
     void updateHandleVisibility();
 
-    void objectsRemoved(const QList<MapObject *> &);
+    void objectsAboutToBeRemoved(const QList<MapObject *> &);
 
-private:
     enum Action {
         NoAction,
         Selecting,
@@ -172,5 +173,4 @@ private:
     Qt::KeyboardModifiers mModifiers;
 };
 
-} // namespace Internal
 } // namespace Tiled

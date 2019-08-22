@@ -29,8 +29,6 @@ namespace Tiled {
 class MapObject;
 class ObjectGroup;
 
-namespace Internal {
-
 class MapObjectItem;
 
 /**
@@ -40,6 +38,7 @@ class MapObjectItem;
 class AbstractObjectTool : public AbstractTool
 {
     Q_OBJECT
+    Q_INTERFACES(Tiled::AbstractTool)
 
 public:
     /**
@@ -74,7 +73,7 @@ protected:
     QList<MapObject*> mapObjectsAt(const QPointF &pos) const;
     MapObject *topMostMapObjectAt(const QPointF &pos) const;
 
-private slots:
+private:
     void duplicateObjects();
     void removeObjects();
     void resetTileSize();
@@ -94,7 +93,6 @@ private slots:
     void raiseToTop();
     void lowerToBottom();
 
-private:
     void showContextMenu(MapObject *clickedObject,
                          QPoint screenPos);
 
@@ -106,5 +104,4 @@ private:
     QAction *mRotateRight;
 };
 
-} // namespace Internal
 } // namespace Tiled

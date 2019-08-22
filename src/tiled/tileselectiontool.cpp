@@ -30,12 +30,11 @@
 #include <QApplication>
 
 using namespace Tiled;
-using namespace Tiled::Internal;
 
 TileSelectionTool::TileSelectionTool(QObject *parent)
     : AbstractTileSelectionTool(tr("Rectangular Select"),
                                 QIcon(QLatin1String(
-                                      ":images/22x22/stock-tool-rect-select.png")),
+                                      ":images/22/stock-tool-rect-select.png")),
                                 QKeySequence(tr("R")),
                                 parent)
     , mMouseDown(false)
@@ -44,7 +43,7 @@ TileSelectionTool::TileSelectionTool(QObject *parent)
     setTilePositionMethod(OnTiles);
 }
 
-void TileSelectionTool::tilePositionChanged(const QPoint &)
+void TileSelectionTool::tilePositionChanged(QPoint)
 {
     if (mSelecting)
         brushItem()->setTileRegion(selectedArea());
@@ -89,6 +88,7 @@ void TileSelectionTool::mousePressed(QGraphicsSceneMouseEvent *event)
         mMouseScreenStart = event->screenPos();
         mSelectionStart = tilePosition();
         brushItem()->setTileRegion(QRegion());
+        return;
     }
 
     if (button == Qt::RightButton) {
@@ -97,10 +97,14 @@ void TileSelectionTool::mousePressed(QGraphicsSceneMouseEvent *event)
             mSelecting = false;
             mMouseDown = false; // Avoid restarting select on move
             brushItem()->setTileRegion(QRegion());
-        } else {
+            return;
+        } else if (event->modifiers() == Qt::NoModifier) {
             clearSelection();
+            return;
         }
     }
+
+    AbstractTileTool::mousePressed(event);  // skipping AbstractTileSelection on purpose
 }
 
 void TileSelectionTool::mouseReleased(QGraphicsSceneMouseEvent *event)

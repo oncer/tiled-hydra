@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include "changeevents.h"
+
 #include <QGraphicsObject>
 #include <QHash>
 
@@ -32,8 +34,6 @@ class Layer;
 class MapObject;
 class Tile;
 class Tileset;
-
-namespace Internal {
 
 class MapDocument;
 class MapObjectItem;
@@ -59,7 +59,8 @@ public:
     QRectF boundingRect() const override { return QRectF(); }
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) override {}
 
-private slots:
+private:
+    void changeEvent(const ChangeEvent &event);
     void selectedObjectsChanged();
     void hoveredMapObjectChanged(MapObject *object, MapObject *previous);
     void mapChanged();
@@ -69,13 +70,12 @@ private slots:
     void syncOverlayItems(const QList<MapObject *> &objects);
     void updateObjectLabelColors();
     void objectsAdded(const QList<MapObject*> &objects);
-    void objectsRemoved(const QList<MapObject*> &objects);
+    void objectsAboutToBeRemoved(const QList<MapObject*> &objects);
     void tilesetTileOffsetChanged(Tileset *tileset);
     void tileTypeChanged(Tile *tile);
 
     void objectLabelVisibilityChanged();
 
-private:
     void addRemoveObjectLabels();
     void addRemoveObjectOutlines();
 
@@ -85,5 +85,4 @@ private:
     std::unique_ptr<MapObjectItem> mHoveredMapObjectItem;
 };
 
-} // namespace Internal
 } // namespace Tiled

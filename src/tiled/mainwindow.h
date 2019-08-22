@@ -24,7 +24,6 @@
 #pragma once
 
 #include "clipboardmanager.h"
-#include "consoledock.h"
 #include "document.h"
 #include "preferences.h"
 #include "preferencesdialog.h"
@@ -47,11 +46,11 @@ class FileFormat;
 class TileLayer;
 class Terrain;
 
-namespace Internal {
-
 class ActionManager;
 class AutomappingManager;
+class ConsoleDock;
 class DocumentManager;
+class IssuesDock;
 class MapDocument;
 class MapDocumentActionHandler;
 class MapScene;
@@ -104,7 +103,7 @@ protected:
     void dragEnterEvent(QDragEnterEvent *) override;
     void dropEvent(QDropEvent *) override;
 
-private slots:
+private:
     void newMap();
     void openFileDialog();
     bool saveFile();
@@ -161,7 +160,6 @@ private slots:
 
     void ensureHasBorderInFullScreen();
 
-private:
     /**
       * Asks the user whether the given \a mapDocument should be saved, when
       * necessary. If it needs to ask, also makes sure that it is the current
@@ -200,6 +198,7 @@ private:
     Zoomable *mZoomable = nullptr;
     MapDocumentActionHandler *mActionHandler;
     ConsoleDock *mConsoleDock;
+    IssuesDock *mIssuesDock;
     ObjectTypesEditor *mObjectTypesEditor;
     QSettings mSettings;
 
@@ -224,5 +223,4 @@ private:
     QMap<QMainWindow*, QByteArray> mMainWindowStates;
 };
 
-} // namespace Internal
 } // namespace Tiled

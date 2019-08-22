@@ -28,7 +28,6 @@
 #include <QAction>
 
 using namespace Tiled;
-using namespace Internal;
 
 AbstractTileFillTool::AbstractTileFillTool(const QString &name,
                                            const QIcon &icon,
@@ -45,13 +44,13 @@ AbstractTileFillTool::AbstractTileFillTool(const QString &name,
     connect(mStampActions->wangFill(), &QAction::toggled, this, &AbstractTileFillTool::wangFillChanged);
 
     connect(mStampActions->flipHorizontal(), &QAction::triggered,
-            [this]() { emit stampChanged(mStamp.flipped(FlipHorizontally)); });
+            [this] { emit stampChanged(mStamp.flipped(FlipHorizontally)); });
     connect(mStampActions->flipVertical(), &QAction::triggered,
-            [this]() { emit stampChanged(mStamp.flipped(FlipVertically)); });
+            [this] { emit stampChanged(mStamp.flipped(FlipVertically)); });
     connect(mStampActions->rotateLeft(), &QAction::triggered,
-            [this]() { emit stampChanged(mStamp.rotated(RotateLeft)); });
+            [this] { emit stampChanged(mStamp.rotated(RotateLeft)); });
     connect(mStampActions->rotateRight(), &QAction::triggered,
-            [this]() { emit stampChanged(mStamp.rotated(RotateRight)); });
+            [this] { emit stampChanged(mStamp.rotated(RotateRight)); });
 }
 
 AbstractTileFillTool::~AbstractTileFillTool()
@@ -66,12 +65,12 @@ void AbstractTileFillTool::deactivate(MapScene *scene)
 
 void AbstractTileFillTool::mousePressed(QGraphicsSceneMouseEvent *event)
 {
-    if (event->button() == Qt::RightButton) {
+    if (event->button() == Qt::RightButton && event->modifiers() == Qt::NoModifier) {
         mCaptureStampHelper.beginCapture(tilePosition());
         return;
     }
 
-    event->ignore();
+    AbstractTileTool::mousePressed(event);
 }
 
 void AbstractTileFillTool::mouseReleased(QGraphicsSceneMouseEvent *event)
@@ -157,7 +156,7 @@ void AbstractTileFillTool::mapDocumentChanged(MapDocument *oldDocument,
     clearOverlay();
 }
 
-void AbstractTileFillTool::tilePositionChanged(const QPoint &tilePos)
+void AbstractTileFillTool::tilePositionChanged(QPoint tilePos)
 {
     if (mCaptureStampHelper.isActive()) {
         clearOverlay();

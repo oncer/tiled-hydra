@@ -21,21 +21,21 @@
 #include "preferencesdialog.h"
 #include "ui_preferencesdialog.h"
 
-#include "autoupdater.h"
 #include "languagemanager.h"
 #include "pluginlistmodel.h"
 #include "preferences.h"
+#include "scriptmanager.h"
 
+#include <QDesktopServices>
 #include <QSortFilterProxyModel>
 
 #include "qtcompat_p.h"
 
 using namespace Tiled;
-using namespace Tiled::Internal;
 
 PreferencesDialog::PreferencesDialog(QWidget *parent)
     : QDialog(parent)
-    , mUi(new Ui::PreferencesDialog)
+    , mUi(new ::Ui::PreferencesDialog)
     , mLanguages(LanguageManager::instance()->availableLanguages())
 {
     mUi->setupUi(this);
@@ -52,8 +52,8 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
     for (const QString &name : qAsConst(mLanguages)) {
         QLocale locale(name);
         QString string = QString(QLatin1String("%1 (%2)"))
-            .arg(QLocale::languageToString(locale.language()))
-            .arg(QLocale::countryToString(locale.country()));
+            .arg(QLocale::languageToString(locale.language()),
+                 QLocale::countryToString(locale.country()));
         mUi->languageCombo->addItem(string, name);
     }
 
@@ -98,6 +98,9 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
     connect(mUi->resolveObjectTypesAndProperties, &QCheckBox::toggled, preferences, [preferences] (bool value) {
         preferences->setExportOption(Preferences::ResolveObjectTypesAndProperties, value);
     });
+    connect(mUi->minimizeOutput, &QCheckBox::toggled, preferences, [preferences] (bool value) {
+        preferences->setExportOption(Preferences::ExportMinimized, value);
+    });
 
     connect(mUi->languageCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &PreferencesDialog::languageSelected);
@@ -119,13 +122,22 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
     connect(mUi->selectionColor, &ColorButton::colorChanged,
             preferences, &Preferences::setSelectionColor);
 
-    connect(mUi->autoUpdateCheckBox, &QPushButton::toggled,
-            this, &PreferencesDialog::autoUpdateToggled);
-    connect(mUi->checkForUpdate, &QPushButton::clicked,
-            this, &PreferencesDialog::checkForUpdates);
+    connect(mUi->displayNewsCheckBox, &QCheckBox::toggled,
+            preferences, &Preferences::setDisplayNews);
+    connect(mUi->displayNewVersionCheckBox, &QCheckBox::toggled,
+            preferences, &Preferences::setCheckForUpdates);
 
     connect(pluginListModel, &PluginListModel::setPluginEnabled,
             preferences, &Preferences::setPluginEnabled);
+
+    const QString &extensionsPath = ScriptManager::instance().extensionsPath();
+    mUi->extensionsPathEdit->setText(extensionsPath);
+    mUi->openExtensionsPathButton->setEnabled(!extensionsPath.isEmpty());
+    connect(mUi->openExtensionsPathButton, &QPushButton::clicked, this, [&] {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(extensionsPath));
+    });
+
+    resize(sizeHint());
 }
 
 PreferencesDialog::~PreferencesDialog()
@@ -158,6 +170,7 @@ void PreferencesDialog::fromPreferences()
 {
     const Preferences *prefs = Preferences::instance();
 
+    // General
     mUi->reloadTilesetImages->setChecked(prefs->reloadTilesetsOnChange());
     mUi->enableDtd->setChecked(prefs->dtdEnabled());
     mUi->openLastFiles->setChecked(prefs->openLastFilesOnStartup());
@@ -166,7 +179,9 @@ void PreferencesDialog::fromPreferences()
     mUi->embedTilesets->setChecked(prefs->exportOption(Preferences::EmbedTilesets));
     mUi->detachTemplateInstances->setChecked(prefs->exportOption(Preferences::DetachTemplateInstances));
     mUi->resolveObjectTypesAndProperties->setChecked(prefs->exportOption(Preferences::ResolveObjectTypesAndProperties));
+    mUi->minimizeOutput->setChecked(prefs->exportOption(Preferences::ExportMinimized));
 
+    // Interface
     if (mUi->openGL->isEnabled())
         mUi->openGL->setChecked(prefs->useOpenGL());
     mUi->wheelZoomsByDefault->setChecked(prefs->wheelZoomsByDefault());
@@ -180,6 +195,11 @@ void PreferencesDialog::fromPreferences()
     mUi->gridFine->setValue(prefs->gridFine());
     mUi->objectLineWidth->setValue(prefs->objectLineWidth());
 
+    // Updates
+    mUi->displayNewsCheckBox->setChecked(prefs->displayNews());
+    mUi->displayNewVersionCheckBox->setChecked(prefs->checkForUpdates());
+
+    // Theme
     int styleComboIndex = mUi->styleCombo->findData(prefs->applicationStyle());
     if (styleComboIndex == -1)
         styleComboIndex = 1;
@@ -192,18 +212,6 @@ void PreferencesDialog::fromPreferences()
     mUi->baseColorLabel->setEnabled(!systemStyle);
     mUi->selectionColor->setEnabled(!systemStyle);
     mUi->selectionColorLabel->setEnabled(!systemStyle);
-
-    // Auto-updater settings
-    auto updater = AutoUpdater::instance();
-    mUi->autoUpdateCheckBox->setEnabled(updater);
-    mUi->checkForUpdate->setEnabled(updater);
-    if (updater) {
-        bool autoUpdateEnabled = updater->automaticallyChecksForUpdates();
-        auto lastChecked = updater->lastUpdateCheckDate();
-        auto lastCheckedString = lastChecked.toString(Qt::DefaultLocaleLongDate);
-        mUi->autoUpdateCheckBox->setChecked(autoUpdateEnabled);
-        mUi->lastAutoUpdateCheckLabel->setText(tr("Last checked: %1").arg(lastCheckedString));
-    }
 }
 
 void PreferencesDialog::retranslateUi()
@@ -226,18 +234,4 @@ void PreferencesDialog::styleComboChanged()
     mUi->baseColorLabel->setEnabled(!systemStyle);
     mUi->selectionColor->setEnabled(!systemStyle);
     mUi->selectionColorLabel->setEnabled(!systemStyle);
-}
-
-void PreferencesDialog::autoUpdateToggled(bool checked)
-{
-    if (auto updater = AutoUpdater::instance())
-        updater->setAutomaticallyChecksForUpdates(checked);
-}
-
-void PreferencesDialog::checkForUpdates()
-{
-    if (auto updater = AutoUpdater::instance()) {
-        updater->checkForUpdates();
-        // todo: do something with the last checked label
-    }
 }

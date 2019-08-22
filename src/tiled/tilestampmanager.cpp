@@ -44,7 +44,6 @@
 #include <memory>
 
 using namespace Tiled;
-using namespace Tiled::Internal;
 
 static QString stampFilePath(const QString &name)
 {
@@ -130,17 +129,17 @@ static TileStamp stampFromContext(AbstractTool *selectedTool)
             return stamp;
 
         const Map *map = mapDocument->map();
-        Map *copyMap = new Map(map->orientation(),
-                               copy->width(), copy->height(),
-                               map->tileWidth(), map->tileHeight());
+        std::unique_ptr<Map> copyMap { new Map(map->orientation(),
+                                               copy->width(), copy->height(),
+                                               map->tileWidth(), map->tileHeight()) };
 
         // Add tileset references to map
         copyMap->addTilesets(copy->usedTilesets());
 
         copyMap->setRenderOrder(map->renderOrder());
-        copyMap->addLayer(copy.release());
+        copyMap->addLayer(std::move(copy));
 
-        stamp.addVariation(copyMap);
+        stamp.addVariation(std::move(copyMap));
     }
 
     return stamp;

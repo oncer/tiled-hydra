@@ -41,8 +41,6 @@ class Terrain;
 class Tile;
 class Tileset;
 
-namespace Internal {
-
 class PropertiesDock;
 class TemplatesDock;
 class TerrainDock;
@@ -58,6 +56,8 @@ class Zoomable;
 class TilesetEditor : public Editor
 {
     Q_OBJECT
+
+    Q_PROPERTY(Tiled::TileCollisionDock *collisionEditor READ collisionEditor)
 
 public:
     explicit TilesetEditor(QObject *parent = nullptr);
@@ -92,11 +92,12 @@ public:
     QAction *showAnimationEditor() const;
 
     TileAnimationEditor *tileAnimationEditor() const;
+    TileCollisionDock *collisionEditor() const;
 
 signals:
     void currentTileChanged(Tile *tile);
 
-private slots:
+private:
     void currentWidgetChanged();
 
     void selectionChanged();
@@ -104,6 +105,7 @@ private slots:
     void indexPressed(const QModelIndex &index);
 
     void tilesetChanged();
+    void selectedTilesChanged();
     void updateTilesetView(Tileset *tileset);
 
     void openAddTilesDialog();
@@ -135,7 +137,6 @@ private slots:
 
     void onAnimationEditorClosed();
 
-private:
     void setCurrentTile(Tile *tile);
 
     void retranslateUi();
@@ -163,6 +164,7 @@ private:
     TilesetDocument *mCurrentTilesetDocument;
 
     Tile *mCurrentTile;
+    bool mSettingSelectedTiles = false;
 };
 
 inline QAction *TilesetEditor::addTilesAction() const
@@ -185,5 +187,11 @@ inline TileAnimationEditor *TilesetEditor::tileAnimationEditor() const
     return mTileAnimationEditor;
 }
 
-} // namespace Internal
+inline TileCollisionDock *TilesetEditor::collisionEditor() const
+{
+    return mTileCollisionDock;
+}
+
 } // namespace Tiled
+
+Q_DECLARE_METATYPE(Tiled::TilesetEditor*)

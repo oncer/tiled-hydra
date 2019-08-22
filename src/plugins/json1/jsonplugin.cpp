@@ -49,7 +49,7 @@ JsonMapFormat::JsonMapFormat(SubFormat subFormat, QObject *parent)
     , mSubFormat(subFormat)
 {}
 
-Tiled::Map *JsonMapFormat::read(const QString &fileName)
+std::unique_ptr<Tiled::Map> JsonMapFormat::read(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -79,7 +79,7 @@ Tiled::Map *JsonMapFormat::read(const QString &fileName)
     }
 
     Tiled::VariantToMapConverter converter;
-    Tiled::Map *map = converter.toMap(variant, QFileInfo(fileName).dir());
+    auto map = converter.toMap(variant, QFileInfo(fileName).dir());
 
     if (!map)
         mError = converter.errorString();
@@ -87,7 +87,9 @@ Tiled::Map *JsonMapFormat::read(const QString &fileName)
     return map;
 }
 
-bool JsonMapFormat::write(const Tiled::Map *map, const QString &fileName)
+bool JsonMapFormat::write(const Tiled::Map *map,
+                          const QString &fileName,
+                          Options options)
 {
     Tiled::SaveFile file(fileName);
 
@@ -100,7 +102,7 @@ bool JsonMapFormat::write(const Tiled::Map *map, const QString &fileName)
     QVariant variant = converter.toVariant(*map, QFileInfo(fileName).dir());
 
     JsonWriter writer;
-    writer.setAutoFormatting(true);
+    writer.setAutoFormatting(!options.testFlag(WriteMinimized));
 
     if (!writer.stringify(variant)) {
         // This can only happen due to coding error
@@ -263,7 +265,8 @@ bool JsonTilesetFormat::supportsFile(const QString &fileName) const
 }
 
 bool JsonTilesetFormat::write(const Tiled::Tileset &tileset,
-                              const QString &fileName)
+                              const QString &fileName,
+                              Options options)
 {
     Tiled::SaveFile file(fileName);
 
@@ -276,7 +279,7 @@ bool JsonTilesetFormat::write(const Tiled::Tileset &tileset,
     QVariant variant = converter.toVariant(tileset, QFileInfo(fileName).dir());
 
     JsonWriter writer;
-    writer.setAutoFormatting(true);
+    writer.setAutoFormatting(!options.testFlag(WriteMinimized));
 
     if (!writer.stringify(variant)) {
         // This can only happen due to coding error
@@ -320,7 +323,7 @@ JsonObjectTemplateFormat::JsonObjectTemplateFormat(QObject *parent)
 {
 }
 
-Tiled::ObjectTemplate *JsonObjectTemplateFormat::read(const QString &fileName)
+std::unique_ptr<Tiled::ObjectTemplate> JsonObjectTemplateFormat::read(const QString &fileName)
 {
     QFile file(fileName);
 
@@ -340,8 +343,8 @@ Tiled::ObjectTemplate *JsonObjectTemplateFormat::read(const QString &fileName)
     }
 
     Tiled::VariantToMapConverter converter;
-    Tiled::ObjectTemplate *objectTemplate = converter.toObjectTemplate(variant,
-                                                                       QFileInfo(fileName).dir());
+    auto objectTemplate = converter.toObjectTemplate(variant,
+                                                     QFileInfo(fileName).dir());
 
     if (!objectTemplate)
         mError = converter.errorString();

@@ -36,7 +36,6 @@
 #include <QWheelEvent>
 
 using namespace Tiled;
-using namespace Tiled::Internal;
 
 WangSetView::WangSetView(QWidget *parent)
     : QTreeView(parent)
@@ -99,7 +98,7 @@ void WangSetView::contextMenuEvent(QContextMenuEvent *event)
 
     QMenu menu;
 
-    QIcon propIcon(QLatin1String(":images/16x16/document-properties.png"));
+    QIcon propIcon(QLatin1String(":images/16/document-properties.png"));
 
     QAction *wangSetProperties = menu.addAction(propIcon,
                                              tr("Wang Set &Properties..."));

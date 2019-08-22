@@ -20,10 +20,15 @@ win32-g++* {
     QMAKE_LFLAGS += /LARGEADDRESSAWARE
 }
 
-CONFIG += depend_includepath c++11
+CONFIG += depend_includepath c++14
 
 !isEmpty(USE_FHS_PLUGIN_PATH) {
     DEFINES += TILED_PLUGIN_DIR=\\\"$${LIBDIR}/tiled/plugins/\\\"
+}
+
+tiled_zstd {
+    LIBS += -lzstd
+    DEFINES += TILED_ZSTD_SUPPORT
 }
 
 # Taken from Qt Creator project files

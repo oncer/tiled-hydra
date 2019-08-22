@@ -56,12 +56,14 @@ mod.add_include('"pythonplugin.h"')
 mod.add_include('"grouplayer.h"')
 mod.add_include('"imagelayer.h"')
 mod.add_include('"layer.h"')
+mod.add_include('"logginginterface.h"')
 mod.add_include('"map.h"')
 mod.add_include('"mapobject.h"')
 mod.add_include('"objectgroup.h"')
 mod.add_include('"tile.h"')
 mod.add_include('"tilelayer.h"')
 mod.add_include('"tileset.h"')
+mod.add_include('"tilesetmanager.h"')
 
 mod.header.writeln('#ifndef _MSC_VER')
 mod.header.writeln('#pragma GCC diagnostic ignored "-Wmissing-field-initializers"')
@@ -85,6 +87,11 @@ cls_object.add_method('properties', retval('Tiled::Properties','p'), [])
 cls_object.add_method('propertyAsString', 'QString', [('QString','prop')])
 cls_object.add_method('setProperty', None,
     [('QString','prop'),('QString','val')])
+cls_object.add_method('setProperty', None,
+    [('QString','prop'),('int','val')])
+cls_object.add_method('setProperty', None,
+    [('QString','prop'),('bool','val')])
+cls_object.add_method('propertyType', 'QString', [('QString','prop')])
 
 cls_tile = tiled.add_class('Tile', cls_object)
 cls_tile.add_method('id', 'int', [])
@@ -93,6 +100,7 @@ cls_tile.add_method('setImage', None, [('const QPixmap&','image')])
 cls_tile.add_method('width', 'int', [])
 cls_tile.add_method('height', 'int', [])
 cls_tile.add_method('size', 'QSize', [])
+cls_tile.add_method('type', 'QString', [])
 
 cls_tileset = tiled.add_class('Tileset', cls_object)
 cls_sharedtileset = tiled.add_class('SharedTileset')
@@ -152,7 +160,6 @@ cls_map.add_enum('LayerDataFormat', ('XML','Base64','Base64Gzip','Base64Zlib','C
 cls_map.add_enum('RenderOrder', ('RightDown','RightUp','LeftDown','LeftUp'))
 cls_map.add_enum('StaggerAxis', ('StaggerX','StaggerY'))
 cls_map.add_enum('StaggerIndex', ('StaggerOdd','StaggerEven'))
-cls_map.add_copy_constructor()
 cls_map.add_constructor([('Orientation','orient'), ('int','w'), ('int','h'),
     ('int','tileW'), ('int','tileH')])
 cls_map.add_method('orientation', 'Orientation', [])
@@ -276,6 +283,7 @@ cls_mapobject.add_method('name', 'QString', [])
 cls_mapobject.add_method('setName', None, [('QString','n')])
 cls_mapobject.add_method('type', 'QString', [])
 cls_mapobject.add_method('setType', None, [('QString','n')])
+cls_mapobject.add_method('effectiveType', 'QString', [])
 
 cls_objectgroup.add_constructor([('QString','name'), ('int','x'), ('int','y')])
 cls_objectgroup.add_method('addObject', None,
@@ -326,30 +334,35 @@ cls_layer.add_method('asGroupLayer', retval('Tiled::GroupLayer*',reference_exist
 
 mod.body.writeln("""
 bool isImageLayerAt(Tiled::Map *map, int index) {
-    return (dynamic_cast<const Tiled::ImageLayer*>(map->layerAt(index)) != 0);
+    return map->layerAt(index)->isImageLayer();
 }
 bool isTileLayerAt(Tiled::Map *map, int index) {
-    return (dynamic_cast<const Tiled::TileLayer*>(map->layerAt(index)) != 0);
+    return map->layerAt(index)->isTileLayer();
 }
 bool isObjectGroupAt(Tiled::Map *map, int index) {
-    return (dynamic_cast<const Tiled::ObjectGroup*>(map->layerAt(index)) != 0);
+    return map->layerAt(index)->isObjectGroup();
 }
 Tiled::ImageLayer* imageLayerAt(Tiled::Map *map, int index) {
-    return static_cast<Tiled::ImageLayer*>(map->layerAt(index));
+    return map->layerAt(index)->asImageLayer();
 }
 Tiled::TileLayer* tileLayerAt(Tiled::Map *map, int index) {
-    return static_cast<Tiled::TileLayer*>(map->layerAt(index));
+    return map->layerAt(index)->asTileLayer();
 }
 Tiled::ObjectGroup* objectGroupAt(Tiled::Map *map, int index) {
-    return static_cast<Tiled::ObjectGroup*>(map->layerAt(index));
+    return map->layerAt(index)->asObjectGroup();
 }
 """)
 
+mod.add_function('isImageLayerAt', 'bool',
+    [param('Tiled::Map*','map',transfer_ownership=False),('int','index')])
 mod.add_function('isTileLayerAt', 'bool',
     [param('Tiled::Map*','map',transfer_ownership=False),('int','index')])
 mod.add_function('isObjectGroupAt', 'bool',
     [param('Tiled::Map*','map',transfer_ownership=False),('int','index')])
 
+mod.add_function('imageLayerAt',
+    retval('Tiled::ImageLayer*',reference_existing_object=True),
+    [param('Tiled::Map*','map',transfer_ownership=False),('int','index')])
 mod.add_function('tileLayerAt',
     retval('Tiled::TileLayer*',reference_existing_object=True),
     [param('Tiled::Map*','map',transfer_ownership=False),('int','index')])
@@ -370,6 +383,15 @@ static bool loadTilesetFromFile(Tiled::Tileset *ts, const QString &file)
 }
 """)
 
+mod.add_function('loadTileset', 'Tiled::SharedTileset', [('QString','file')])
+
+mod.body.writeln("""
+static Tiled::SharedTileset loadTileset(const QString &file)
+{
+    return Tiled::TilesetManager::instance()->loadTileset(file);
+}
+""")
+
 """
  C++ class PythonScript is seen as Tiled.Plugin from Python script
  (naming describes the opposite side from either perspective)
@@ -383,9 +405,8 @@ cls_pp = mod.add_class('PythonScript',
  PythonPlugin implements LoggingInterface for messaging to Tiled
 """
 cls_logi = tiled.add_class('LoggingInterface', destructor_visibility='private')
-cls_logi.add_enum('OutputType', ('INFO','ERROR'))
-cls_logi.add_method('log', 'void', [('OutputType','type'),('const QString','msg')],
-    is_virtual=True)
+cls_logi.add_enum('OutputType', ('INFO','WARNING','ERROR'))
+cls_logi.add_method('log', 'void', [('OutputType','type'),('const QString','msg')])
 
 
 with open('pythonbind.cpp','w') as fh:
@@ -412,15 +433,30 @@ PyObject* _wrap_convert_c2py__Tiled__LoggingInterface(Tiled::LoggingInterface *c
         py_retval = Py_BuildValue((char *) "N", py_LoggingInterface);
         return py_retval;
 }
+
+int _wrap_convert_py2c__Tiled__Map___star__(PyObject *value, Tiled::Map * *address)
+{
+    PyObject *py_retval;
+    PyTiledMap *tmp_Map;
+
+    py_retval = Py_BuildValue((char *) "(O)", value);
+    if (!PyArg_ParseTuple(py_retval, (char *) "O!", &PyTiledMap_Type, &tmp_Map)) {
+        Py_DECREF(py_retval);
+        return 0;
+    }
+    *address = tmp_Map->obj->clone();
+    Py_DECREF(py_retval);
+    return 1;
+}
 """, file=fh)
     #mod.generate_c_to_python_type_converter(
     #  utils.eval_retval(retval("Tiled::LoggingInterface")),
     #  sink)
-    mod.generate_python_to_c_type_converter(
-        utils.eval_retval(retval('Tiled::Map*',caller_owns_return=True)),
-        sink)
+    # mod.generate_python_to_c_type_converter(
+    #    utils.eval_retval(retval('Tiled::Map*',caller_owns_return=True)),
+    #    sink)
     mod.generate_c_to_python_type_converter(
-        utils.eval_retval("const Tiled::Map"),
+        utils.eval_retval(retval('const Tiled::Map*',reference_existing_object=True)),
         sink)
 
     print(sink.flush(), file=fh)

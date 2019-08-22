@@ -29,7 +29,6 @@ class NewMapDialog;
 }
 
 namespace Tiled {
-namespace Internal {
 
 /**
  * A dialog for the creation of a new map.
@@ -48,14 +47,12 @@ public:
      */
     MapDocumentPtr createMap();
 
-private slots:
+private:
     void refreshPixelSize();
 
     void updateWidgets(bool checked);
 
-private:
     Ui::NewMapDialog *mUi;
 };
 
-} // namespace Internal
 } // namespace Tiled

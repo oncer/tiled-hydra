@@ -27,10 +27,6 @@ class QMenu;
 
 namespace Tiled {
 
-class LoggingInterface;
-
-namespace Internal {
-
 class CommandDataModel;
 
 class CommandManager : public QObject
@@ -38,7 +34,6 @@ class CommandManager : public QObject
     Q_OBJECT
 
 public:
-
     static CommandManager *instance();
 
     static void deleteInstance();
@@ -55,8 +50,6 @@ public:
 
     void updateActions();
 
-    LoggingInterface *logger() const { return mLogger; }
-
     void retranslateUi();
 
 public slots:
@@ -70,6 +63,7 @@ private:
     Q_DISABLE_COPY(CommandManager)
 
     CommandManager();
+    ~CommandManager() override;
 
     /**
      * Populates all the menus registered in CommandManager
@@ -81,9 +75,6 @@ private:
     QList<QMenu*> mMenus;
     QList<QAction*> mActions;
     QAction *mEditCommands;
-
-    LoggingInterface *mLogger;
 };
 
-} // namespace Internal
 } // namespace Tiled

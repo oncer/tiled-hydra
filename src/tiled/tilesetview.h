@@ -29,8 +29,6 @@ namespace Tiled {
 
 class Terrain;
 
-namespace Internal {
-
 class TilesetDocument;
 class Zoomable;
 
@@ -147,7 +145,7 @@ protected:
     void wheelEvent(QWheelEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *event) override;
 
-private slots:
+private:
     void addTerrainType();
     void selectTerrainImage();
     void selectWangSetImage();
@@ -158,7 +156,6 @@ private slots:
 
     void adjustScale();
 
-private:
     void applyTerrain();
     void finishTerrainChange();
     void applyWangId();
@@ -206,7 +203,6 @@ inline bool TilesetView::markAnimatedTiles() const
     return mMarkAnimatedTiles;
 }
 
-} // namespace Internal
 } // namespace Tiled
 
-Q_DECLARE_METATYPE(Tiled::Internal::TilesetView *)
+Q_DECLARE_METATYPE(Tiled::TilesetView *)

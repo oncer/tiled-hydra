@@ -29,13 +29,12 @@
 #include "utils.h"
 
 using namespace Tiled;
-using namespace Tiled::Internal;
 
 CreateTileObjectTool::CreateTileObjectTool(QObject *parent)
     : CreateObjectTool(parent)
 {
-    QIcon icon(QLatin1String(":images/24x24/insert-image.png"));
-    icon.addFile(QLatin1String(":images/48x48/insert-image.png"));
+    QIcon icon(QLatin1String(":images/24/insert-image.png"));
+    icon.addFile(QLatin1String(":images/48/insert-image.png"));
     setIcon(icon);
     Utils::setThemeIcon(this, "insert-image");
     languageChangedImpl();

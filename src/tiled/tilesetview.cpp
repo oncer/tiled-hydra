@@ -48,7 +48,6 @@
 #include <QtCore/qmath.h>
 
 using namespace Tiled;
-using namespace Tiled::Internal;
 
 namespace {
 
@@ -176,11 +175,7 @@ static void paintCorners(QPainter *painter,
 
 static void setCosmeticPen(QPainter *painter, const QBrush &brush, qreal width)
 {
-#if QT_VERSION >= 0x050600
     const qreal devicePixelRatio = painter->device()->devicePixelRatioF();
-#else
-    const int devicePixelRatio = painter->device()->devicePixelRatio();
-#endif
 
     QPen pen(brush, width * devicePixelRatio);
     pen.setCosmetic(true);
@@ -716,7 +711,7 @@ TilesetView::TilesetView(QWidget *parent)
     , mTerrainChanged(false)
     , mWangIdChanged(false)
     , mHandScrolling(false)
-    , mImageMissingIcon(QStringLiteral("://images/32x32/image-missing.png"))
+    , mImageMissingIcon(QStringLiteral("://images/32/image-missing.png"))
 {
     setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -1197,7 +1192,7 @@ void TilesetView::contextMenuEvent(QContextMenuEvent *event)
 
     QMenu menu;
 
-    QIcon propIcon(QLatin1String(":images/16x16/document-properties.png"));
+    QIcon propIcon(QLatin1String(":images/16/document-properties.png"));
 
     if (tile) {
         if (mEditTerrain) {

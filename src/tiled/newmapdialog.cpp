@@ -45,7 +45,6 @@ static const char * const TILE_WIDTH_KEY = "Map/TileWidth";
 static const char * const TILE_HEIGHT_KEY = "Map/TileHeight";
 
 using namespace Tiled;
-using namespace Tiled::Internal;
 
 template<typename Type>
 static Type comboBoxValue(QComboBox *comboBox)
@@ -91,6 +90,9 @@ NewMapDialog::NewMapDialog(QWidget *parent) :
     mUi->layerFormat->addItem(QCoreApplication::translate("PreferencesDialog", "CSV"), QVariant::fromValue(Map::CSV));
     mUi->layerFormat->addItem(QCoreApplication::translate("PreferencesDialog", "Base64 (uncompressed)"), QVariant::fromValue(Map::Base64));
     mUi->layerFormat->addItem(QCoreApplication::translate("PreferencesDialog", "Base64 (zlib compressed)"), QVariant::fromValue(Map::Base64Zlib));
+#ifdef TILED_ZSTD_SUPPORT
+    mUi->layerFormat->addItem(QCoreApplication::translate("PreferencesDialog", "Base64 (Zstandard compressed)"), QVariant::fromValue(Map::Base64Zstandard));
+#endif
 
     mUi->renderOrder->addItem(QCoreApplication::translate("PreferencesDialog", "Right Down"), QVariant::fromValue(Map::RightDown));
     mUi->renderOrder->addItem(QCoreApplication::translate("PreferencesDialog", "Right Up"), QVariant::fromValue(Map::RightUp));
@@ -106,7 +108,7 @@ NewMapDialog::NewMapDialog(QWidget *parent) :
         setComboBoxValue(mUi->orientation, Map::Orthogonal);
 
     if (!setComboBoxValue(mUi->layerFormat, prefs->layerDataFormat()))
-        setComboBoxValue(mUi->layerFormat, Map::CSV);
+        setComboBoxValue(mUi->layerFormat, Map::Base64Zstandard);
 
     setComboBoxValue(mUi->renderOrder, prefs->mapRenderOrder());
 
@@ -191,7 +193,7 @@ MapDocumentPtr NewMapDialog::createMap()
     s->setValue(QLatin1String(TILE_WIDTH_KEY), tileWidth);
     s->setValue(QLatin1String(TILE_HEIGHT_KEY), tileHeight);
 
-    return MapDocumentPtr::create(map.release());
+    return MapDocumentPtr::create(std::move(map));
 }
 
 void NewMapDialog::refreshPixelSize()

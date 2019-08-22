@@ -35,7 +35,6 @@ class QtVariantProperty;
 class QtVariantPropertyManager;
 
 namespace Tiled {
-namespace Internal {
 
 class ObjectTypesModel;
 
@@ -54,7 +53,7 @@ protected:
     void closeEvent(QCloseEvent *) override;
     void changeEvent(QEvent *e) override;
 
-private slots:
+private:
     void addObjectType();
     void selectedObjectTypesChanged();
     void removeSelectedObjectTypes();
@@ -80,7 +79,6 @@ private slots:
     void selectFirstType();
     void currentItemChanged(QtBrowserItem *item);
 
-private:
     void retranslateUi();
 
     QtVariantProperty *createProperty(int type,
@@ -104,5 +102,4 @@ private:
     QAction *mRenamePropertyAction;
 };
 
-} // namespace Internal
 } // namespace Tiled

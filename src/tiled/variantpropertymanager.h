@@ -26,7 +26,6 @@
 #include <QFileIconProvider>
 
 namespace Tiled {
-namespace Internal {
 
 /**
  * Extension of the QtVariantPropertyManager that adds support for a filePath
@@ -63,11 +62,10 @@ protected:
     void initializeProperty(QtProperty *property) override;
     void uninitializeProperty(QtProperty *property) override;
 
-private slots:
+private:
     void slotValueChanged(QtProperty *property, const QVariant &value);
     void slotPropertyDestroyed(QtProperty *property);
 
-private:
     struct Data {
         QVariant value;
         QString filter;
@@ -99,5 +97,4 @@ private:
     QFileIconProvider mIconProvider;
 };
 
-} // namespace Internal
 } // namespace Tiled

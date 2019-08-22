@@ -28,7 +28,6 @@
 #include "qtcompat_p.h"
 
 namespace Tiled {
-namespace Internal {
 
 ReparentLayers::ReparentLayers(MapDocument *mapDocument,
                                const QList<Layer *> &layers,
@@ -50,7 +49,9 @@ ReparentLayers::ReparentLayers(MapDocument *mapDocument,
 void ReparentLayers::undo()
 {
     auto layerModel = mMapDocument->layerModel();
-    auto currentLayer = mMapDocument->currentLayer();
+
+    const auto currentLayer = mMapDocument->currentLayer();
+    const auto selectedLayers = mMapDocument->selectedLayers();
 
     for (int i = mUndoInfo.size() - 1; i >= 0; --i) {
         auto& undoInfo = mUndoInfo.at(i);
@@ -63,12 +64,15 @@ void ReparentLayers::undo()
     mUndoInfo.clear();
 
     mMapDocument->setCurrentLayer(currentLayer);
+    mMapDocument->setSelectedLayers(selectedLayers);
 }
 
 void ReparentLayers::redo()
 {
     auto layerModel = mMapDocument->layerModel();
-    auto currentLayer = mMapDocument->currentLayer();
+
+    const auto currentLayer = mMapDocument->currentLayer();
+    const auto selectedLayers = mMapDocument->selectedLayers();
 
     Q_ASSERT(mUndoInfo.isEmpty());
     mUndoInfo.reserve(mLayers.size());
@@ -95,7 +99,7 @@ void ReparentLayers::redo()
     }
 
     mMapDocument->setCurrentLayer(currentLayer);
+    mMapDocument->setSelectedLayers(selectedLayers);
 }
 
-} // namespace Internal
 } // namespace Tiled

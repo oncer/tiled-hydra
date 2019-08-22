@@ -26,20 +26,19 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WORLDMANAGER_H
-#define WORLDMANAGER_H
+#pragma once
 
 #include "tiled_global.h"
 
+#include "filesystemwatcher.h"
+
 #include <QCoreApplication>
-#include <QFileSystemWatcher>
 #include <QMap>
 #include <QObject>
 #include <QPoint>
 #include <QRect>
 #include <QRegularExpression>
 #include <QSize>
-#include <QTimer>
 #include <QVector>
 
 #include <memory>
@@ -79,11 +78,14 @@ class TILEDSHARED_EXPORT WorldManager : public QObject
 {
     Q_OBJECT
 
+    WorldManager();
+    ~WorldManager();
+
 public:
     static WorldManager &instance();
     static void deleteInstance();
 
-    bool loadWorld(const QString &fileName, QString *errorString = nullptr);
+    World *loadWorld(const QString &fileName, QString *errorString = nullptr);
     void unloadWorld(const QString &fileName);
 
     const QMap<QString, World*> &worlds() const { return mWorlds; }
@@ -94,25 +96,17 @@ public:
 signals:
     void worldsChanged();
 
-private slots:
-    void reloadChangedWorldFiles();
-
 private:
-    WorldManager();
-    ~WorldManager();
+    void reloadWorldFiles(const QStringList &fileNames);
 
     std::unique_ptr<World> privateLoadWorld(const QString &fileName,
                                             QString *errorString = nullptr);
 
     QMap<QString, World*> mWorlds;
 
-    QFileSystemWatcher mFileSystemWatcher;
-    QTimer mReloadTimer;
-    QStringList mChangedWorldFiles;
+    FileSystemWatcher mFileSystemWatcher;
 
     static WorldManager *mInstance;
 };
 
 } // namespace Tiled
-
-#endif // WORLDMANAGER_H

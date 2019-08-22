@@ -27,18 +27,17 @@
 #include "tilepainter.h"
 
 using namespace Tiled;
-using namespace Tiled::Internal;
 
 MagicWandTool::MagicWandTool(QObject *parent)
     : AbstractTileSelectionTool(tr("Magic Wand"),
                                 QIcon(QLatin1String(
-                                      ":images/22x22/stock-tool-fuzzy-select-22.png")),
+                                      ":images/22/stock-tool-fuzzy-select-22.png")),
                                 QKeySequence(tr("W")),
                                 parent)
 {
 }
 
-void MagicWandTool::tilePositionChanged(const QPoint &tilePos)
+void MagicWandTool::tilePositionChanged(QPoint tilePos)
 {
     // Make sure that a tile layer is selected
     TileLayer *tileLayer = currentTileLayer();

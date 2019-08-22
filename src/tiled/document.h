@@ -29,6 +29,8 @@
 #include <QString>
 #include <QVariant>
 
+#include <memory>
+
 class QUndoStack;
 
 namespace Tiled {
@@ -37,7 +39,8 @@ class FileFormat;
 class Object;
 class Tile;
 
-namespace Internal {
+class ChangeEvent;
+class EditableAsset;
 
 /**
  * Keeps track of a file and its undo history.
@@ -48,7 +51,7 @@ class Document : public QObject,
     Q_OBJECT
 
     Q_PROPERTY(QString fileName READ fileName NOTIFY fileNameChanged)
-    Q_PROPERTY(bool modified READ isModified NOTIFY modifiedChanged)
+    Q_PROPERTY(bool modified READ isModified)
 
 public:
     enum DocumentType {
@@ -88,8 +91,10 @@ public:
 
     QDateTime lastSaved() const { return mLastSaved; }
 
-    QUndoStack *undoStack() const;
+    QUndoStack *undoStack();
     bool isModified() const;
+
+    Q_INVOKABLE virtual Tiled::EditableAsset *editable() = 0;
 
     Object *currentObject() const { return mCurrentObject; }
     void setCurrentObject(Object *object);
@@ -115,11 +120,11 @@ public:
     static const QHash<QString, Document *> &documentInstances();
 
 signals:
+    void changed(const ChangeEvent &change);
     void saved();
 
     void fileNameChanged(const QString &fileName,
                          const QString &oldFileName);
-    void modifiedChanged();
 
     void currentObjectChanged(Object *object);
 
@@ -138,12 +143,13 @@ signals:
 protected:
     void setFileName(const QString &fileName);
 
-    QUndoStack *mUndoStack;
     QDateTime mLastSaved;
 
     Object *mCurrentObject = nullptr;   /**< Current properties object. */
 
     QString mLastExportFileName;
+
+    std::unique_ptr<EditableAsset> mEditable;
 
 private:
     const DocumentType mType;
@@ -166,15 +172,6 @@ inline QString Document::fileName() const
 inline QString Document::canonicalFilePath() const
 {
     return mCanonicalFilePath;
-}
-
-/**
- * Returns the undo stack of this document. Should be used to push any commands
- * on that modify the document.
- */
-inline QUndoStack *Document::undoStack() const
-{
-    return mUndoStack;
 }
 
 inline bool Document::ignoreBrokenLinks() const
@@ -204,5 +201,4 @@ inline const QHash<QString, Document *> &Document::documentInstances()
 
 using DocumentPtr = QSharedPointer<Document>;
 
-} // namespace Internal
 } // namespace Tiled

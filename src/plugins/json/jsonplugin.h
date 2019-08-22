@@ -60,10 +60,10 @@ public:
 
     JsonMapFormat(SubFormat subFormat, QObject *parent = nullptr);
 
-    Tiled::Map *read(const QString &fileName) override;
+    std::unique_ptr<Tiled::Map> read(const QString &fileName) override;
     bool supportsFile(const QString &fileName) const override;
 
-    bool write(const Tiled::Map *map, const QString &fileName) override;
+    bool write(const Tiled::Map *map, const QString &fileName, Options options) override;
 
     QString nameFilter() const override;
     QString shortName() const override;
@@ -86,7 +86,7 @@ public:
     Tiled::SharedTileset read(const QString &fileName) override;
     bool supportsFile(const QString &fileName) const override;
 
-    bool write(const Tiled::Tileset &tileset, const QString &fileName) override;
+    bool write(const Tiled::Tileset &tileset, const QString &fileName, Options options) override;
 
     QString nameFilter() const override;
     QString shortName() const override;
@@ -104,7 +104,7 @@ class JSONSHARED_EXPORT JsonObjectTemplateFormat : public Tiled::ObjectTemplateF
 public:
     JsonObjectTemplateFormat(QObject *parent = nullptr);
 
-    Tiled::ObjectTemplate *read(const QString &fileName) override;
+    std::unique_ptr<Tiled::ObjectTemplate> read(const QString &fileName) override;
     bool supportsFile(const QString &fileName) const override;
 
     bool write(const Tiled::ObjectTemplate *objectTemplate, const QString &fileName) override;

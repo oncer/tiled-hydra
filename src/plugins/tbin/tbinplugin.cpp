@@ -22,6 +22,7 @@
 
 #include "tbin/Map.hpp"
 
+#include "logginginterface.h"
 #include "map.h"
 #include "mapobject.h"
 #include "objectgroup.h"
@@ -36,6 +37,7 @@
 #include <cmath>
 #include <fstream>
 #include <map>
+#include <memory>
 #include <sstream>
 
 namespace
@@ -109,7 +111,7 @@ TbinMapFormat::TbinMapFormat(QObject *)
 {
 }
 
-Tiled::Map *TbinMapFormat::read(const QString &fileName)
+std::unique_ptr<Tiled::Map> TbinMapFormat::read(const QString &fileName)
 {
     std::ifstream file( fileName.toStdString(), std::ios::in | std::ios::binary );
     if (!file) {
@@ -118,7 +120,7 @@ Tiled::Map *TbinMapFormat::read(const QString &fileName)
     }
 
     tbin::Map tmap;
-    Tiled::Map* map = nullptr;
+    std::unique_ptr<Tiled::Map> map;
     try
     {
         tmap.loadFromStream(file);
@@ -128,11 +130,11 @@ Tiled::Map *TbinMapFormat::read(const QString &fileName)
 
         auto &firstLayer = tmap.layers[0];
 
-        map = new Tiled::Map(Tiled::Map::Orthogonal,
-                             QSize(firstLayer.layerSize.x, firstLayer.layerSize.y),
-                             QSize(firstLayer.tileSize.x, firstLayer.tileSize.y));
+        map = std::make_unique<Tiled::Map>(Tiled::Map::Orthogonal,
+                                           QSize(firstLayer.layerSize.x, firstLayer.layerSize.y),
+                                           QSize(firstLayer.tileSize.x, firstLayer.tileSize.y));
 
-        tbinToTiledProperties(tmap.props, map);
+        tbinToTiledProperties(tmap.props, map.get());
 
         const QDir fileDir(QFileInfo(fileName).dir());
 
@@ -216,8 +218,8 @@ Tiled::Map *TbinMapFormat::read(const QString &fileName)
                     objects->addObject(obj);
                 }
             }
-            map->addLayer(layer.release());
-            map->addLayer(objects.release());
+            map->addLayer(std::move(layer));
+            map->addLayer(std::move(objects));
         }
     }
     catch (std::exception& e) {
@@ -227,8 +229,10 @@ Tiled::Map *TbinMapFormat::read(const QString &fileName)
     return map;
 }
 
-bool TbinMapFormat::write(const Tiled::Map *map, const QString &fileName)
+bool TbinMapFormat::write(const Tiled::Map *map, const QString &fileName, Options options)
 {
+    Q_UNUSED(options)
+
     try {
         tbin::Map tmap;
         //tmap.id = map->name();
@@ -288,9 +292,11 @@ bool TbinMapFormat::write(const Tiled::Map *map, const QString &fileName)
                                 ttile.staticData.blendMode = 0;
                             }
                             else {
-                                // TODO: Check all frame durations are the same
+                                ttile.animatedData.frameInterval = tile->frames().at(0).duration;
+
                                 for (Tiled::Frame frame : tile->frames()) {
-                                    ttile.animatedData.frameInterval = frame.duration;
+                                    if (frame.duration != ttile.animatedData.frameInterval)
+                                        Tiled::WARNING("Frames with different duration are not supported in the tBIN format.");
                                     tbin::Tile tframe;
                                     tframe.tilesheet = ttile.tilesheet;
                                     tframe.staticData.tileIndex = frame.tileId;
@@ -314,22 +320,22 @@ bool TbinMapFormat::write(const Tiled::Map *map, const QString &fileName)
         bool allObjectsAlignedToGrid = true;
 
         for (Tiled::ObjectGroup* objs : objGroups) {
-            const auto groupName = objs->name().toStdString();
+            const auto groupName = objs->name();
 
-            tbin::Layer* tiles = tileLayerIdMap[groupName];
+            tbin::Layer* tiles = tileLayerIdMap[groupName.toStdString()];
             if (!tiles) {
-                qWarning("Ignoring object layer \"%s\" without matching tile layer.", groupName.c_str());
+                Tiled::WARNING(QString(QLatin1String("Ignoring object layer \"%s\" without matching tile layer.")).arg(groupName));
                 continue;
             }
 
             for (Tiled::MapObject* obj : objs->objects()) {
                 if (obj->name() != QLatin1String("TileData")) {
-                    qWarning() << "Ignoring object with name different from 'TileData'.";
+                    Tiled::WARNING("Ignoring object with name different from 'TileData'.");
                     continue;
                 }
 
                 if (obj->properties().isEmpty()) {
-                    qWarning() << "Ignoring object without custom properties.";
+                    Tiled::WARNING("Ignoring object without custom properties.");
                     continue;
                 }
 
@@ -354,7 +360,7 @@ bool TbinMapFormat::write(const Tiled::Map *map, const QString &fileName)
         }
 
         if (!allObjectsAlignedToGrid)
-            qWarning() << "Not all objects are aligned to the tile grid.";
+            Tiled::WARNING("Not all objects are aligned to the tile grid.");
 
         std::ofstream file(fileName.toStdString(), std::ios::trunc | std::ios::binary);
         if (!file) {

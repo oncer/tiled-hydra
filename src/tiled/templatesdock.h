@@ -38,8 +38,6 @@ class ObjectTemplate;
 class MapObject;
 class Tile;
 
-namespace Internal {
-
 class AbstractTool;
 class MapScene;
 class MapView;
@@ -67,8 +65,11 @@ public slots:
     void openTemplate(const QString &path);
     void bringToFront();
 
-private slots:
-    void setSelectedTool(AbstractTool *tool);
+protected:
+    void focusInEvent(QFocusEvent *event) override;
+    void focusOutEvent(QFocusEvent *event) override;
+
+private:
     void setTemplate(ObjectTemplate *objectTemplate);
     void checkTileset();
 
@@ -78,11 +79,6 @@ private slots:
 
     void chooseDirectory();
 
-protected:
-    void focusInEvent(QFocusEvent *event) override;
-    void focusOutEvent(QFocusEvent *event) override;
-
-private:
     void retranslateUi();
     void fixTileset();
 
@@ -135,5 +131,4 @@ private:
 inline void TemplatesDock::setPropertiesDock(PropertiesDock *propertiesDock)
 { mPropertiesDock = propertiesDock; }
 
-} // namespace Internal
 } // namespace Tiled

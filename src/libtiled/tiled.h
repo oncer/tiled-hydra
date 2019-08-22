@@ -68,6 +68,7 @@ enum LoadingStatus {
 };
 
 const int CHUNK_SIZE = 16;
+const int CHUNK_SIZE_MIN = 4;
 const int CHUNK_MASK = CHUNK_SIZE - 1;
 
 static const char TILES_MIMETYPE[] = "application/vnd.tile.list";
@@ -80,5 +81,6 @@ TILEDSHARED_EXPORT QPointF alignmentOffset(const QRectF &r, Alignment alignment)
 
 TILEDSHARED_EXPORT QString toFileReference(const QUrl &url, const QDir &dir);
 TILEDSHARED_EXPORT QUrl toUrl(const QString &reference, const QDir &dir);
+TILEDSHARED_EXPORT QString urlToLocalFileOrQrc(const QUrl &url);
 
 } // namespace Tiled
